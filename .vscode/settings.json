@@ -1,0 +1,4 @@
+{
+    "pylint.importStrategy": "fromEnvironment"
+    "pylint.args": ["cv2"]
+}
