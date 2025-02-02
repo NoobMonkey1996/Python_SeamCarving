@@ -8,7 +8,9 @@
 #       4. enhance
 
 # https://medium.com/@er_95882/convolution-image-filters-cnns-and-examples-in-python-pytorch-bd3f3ac5df9c
+# https://github.com/SamratSahoo/UT-Arlington-Research/blob/master/Week%206%20-%20Convolutions%20%26%20Wavelet%20Transforms/Convolutions.py
 
+import os
 import sys
 import imageio.v3 as iio 
 import ipympl
@@ -18,6 +20,7 @@ import cv2
 import numpy as np
 from numpy import asarray
 import time
+import re
 
 # start timing
 start_time = time.time()
@@ -50,10 +53,35 @@ def kernelIntenseSharpen():
                         [-1,-1,-1]])
     return kernel
 
+# for edge detection, detect high gradient pixels
+def kernelSobelX():
+    kernel = np.array([[1,0,-1],
+                       [2,0,-2],
+                       [1,0,-1]])
+    return kernel
+
+def kernelSobelY():
+    kernel = np.transpose(kernelSobelX())
+    
+    return kernel
+
+def kernelgaussianBlur(sigma, mu, kernelSize):
+    # sigma = standard deviation
+    # mu = mean 
+    # 5x5 gaussian array
+    x_Gauss = np.linspace(mu - 3*sigma, mu + 3*sigma, kernelSize)
+    y_Gauss = np.exp(-0.5 * ((x_Gauss - mu) / sigma) ** 2) / (sigma * np.sqrt(2 * np.pi))    # create 2D gaussian kernel by taking the outer product
+    kernel = np.outer(y_Gauss,y_Gauss)
+    # normalise the kernel
+    kernel = kernel / np.sum(kernel)
+    
+    return kernel
+
 imageArray = asarray(image0)
 imageSize = imageArray.size
 
 imHeight, imWidth, imChannels = imageArray.shape
+# [rows, columns] = np.shape(image0)
 # in the form of imageArray[height:width:0]; 0=R channel, 1=G channels, 2 = B channel
 rChan = imageArray[:,:,0]
 gChan = imageArray[:,:,1]
@@ -77,7 +105,14 @@ bChan = imageArray[:,:,2]
 # plt.show()
 # plt.pause(0.1)
 
-def processImage(image):
+##############################################
+# strategy for edge pixels
+#   1. wrap image
+#   2. ignore edge pixels and only compute for pixels with all neighbours
+#   3. duplicate edge pixels 
+
+
+def imageGray(image):
     image = cv2.imread(image)
     # turn image to grayscale
     image = cv2.cvtColor(src=image, code=cv2.COLOR_BGR2GRAY)
@@ -135,23 +170,43 @@ def convolve2D(image, kernel, padding=0, strides=1):
     
 def main():
     # load in grayscale image
-    image = processImage("mario1.jpeg")
-    # kernel selected
-    kernel = kernelIntenseSharpen()
-    # convolve and save output
+    image = imageGray("mario1.jpeg")
+    
+    ### kernel selected
+    # kernel = kernelSmooth()
+    # kernel = kernelWeightedSmooth()
+    # kernel = kernelSharpen()
+    # kernel = kernelIntenseSharpen()
+    # kernel = kernelSobelX()
+    # kernel = kernelSobelY()
+    kernel = kernelgaussianBlur(5,1,25) # sigma, mean, kernel size(larger works better)
+    
+    ### convolve and save output
     output = convolve2D(image, kernel, padding=2)
-    cv2.imwrite('2DConvolved.jpg', output)
+    
+    return output
+    
 
 # built-in variable that gets its value depending on how script is executed
 # when script is run directly via (python script.py), __name__ is set to the modeul's name ('script')
 if __name__ == '__main__':
-    main()
+    output = main()
+    cv2.imwrite('2DConvolved.jpg', output)
 
+    # dirCurrent = 'C:/Users/user/Downloads/CodingProjectsOct2023/Python_SeamCarving'
+    # pattern = re.compile(r'^2DConvolved(*)\.jpg$')
+    # print(pattern)
+    # for filename in os.listdir(dirCurrent):
+    #     if pattern.match(filename) and  :
+    #         if 
+    #             cv2.imwrite('2DConvolved' + str(iter+1)'.jpg', output)
+    #         break
+    #     else:
+    #         break
+            
 
-# strategy for edge pixels
-#   1. wrap image
-#   2. ignore edge pixels and only compute for pixels with all neighbours
-#   3. duplicate edge pixels 
+            
+
 
 
 

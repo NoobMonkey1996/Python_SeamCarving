@@ -1,0 +1,30 @@
+import sys
+import imageio.v3 as iio 
+import ipympl
+import matplotlib.pyplot as plt
+import skimage as ski
+import cv2
+import numpy as np
+from numpy import asarray
+import time
+
+def kernelgaussianBlur(sigma, mu):
+    # sigma = standard deviation
+    # mean 
+    # 5x5 gaussian array
+    x_Gauss = np.linspace(mu - sigma*3, mu + sigma*3, 5)
+    y_Gauss = np.exp(-(x_Gauss - mu)**2/(2*sigma**2)) / np.sqrt(2*np.pi*sigma**2)
+    # create 2D gaussian kernel by taking the outer product
+    kernel = np.outer(y_Gauss,y_Gauss)
+    # normalise the kernel
+    kernel = kernel / np.sum(kernel)
+    
+    return kernel
+
+
+kernel = kernelgaussianBlur(3,0)
+plt.imshow(kernel, interpolation='none', cmap='viridis')
+plt.colorbar()
+plt.show()
+
+print(kernel)

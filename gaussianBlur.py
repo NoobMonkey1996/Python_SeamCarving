@@ -14,7 +14,7 @@ fig.suptitle('Original picture')
 plt.show(block=False)
 
 # now comes the gaussian blur picture
-sigma = 3.0
+sigma = 25.0
 blurred = ski.filters.gaussian(
     image, sigma=(sigma, sigma), truncate=3.5, channel_axis=-1)
 
